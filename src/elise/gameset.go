@@ -1,4 +1,4 @@
-package gameset
+package elise
 
 import "sync"
 
