@@ -7,6 +7,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/fernanlukban/elise"
+
 	"github.com/yuhanfang/riot/apiclient"
 	"github.com/yuhanfang/riot/constants/champion"
 	"github.com/yuhanfang/riot/constants/lane"
@@ -86,6 +88,7 @@ func main() {
 	limiter := ratelimit.NewLimiter()
 	const reg = region.NA1
 	client := apiclient.New(key, httpClient, limiter)
+	pw := elise.PlayerWalker(&client)
 
 	for _, champion := range champion.All() {
 		champMap[champion] = make(map[lane.Lane]int)
