@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/fernanlukban/elise"
-
 	"github.com/yuhanfang/riot/apiclient"
 	"github.com/yuhanfang/riot/constants/champion"
 	"github.com/yuhanfang/riot/constants/lane"
@@ -88,7 +87,42 @@ func main() {
 	limiter := ratelimit.NewLimiter()
 	const reg = region.NA1
 	client := apiclient.New(key, httpClient, limiter)
-	pw := elise.PlayerWalker(&client)
+	pw := elise.NewPlayerWalker(client)
+	gw := elise.NewGameWalker(client)
+	op, _ := client.GetBySummonerName(ctx, reg, "opsadboys")
+	gameSet := elise.NewGameSet()
+	gameIDList, _ := pw.GetGameIDList(ctx, reg, op.AccountID, nil)
+	gameIDQueue := make([]int64, 10)
+	for _, gameID := range gameIDList {
+		gameIDQueue = append(gameIDQueue, gameID)
+		fmt.Print("HERE ")
+		fmt.Println(gameID)
+	}
+	for gameSet.Count() < 1000 {
+		currentGameID := gameIDQueue[gameSet.Count()]
+		gameSet.Add(currentGameID)
+		fmt.Println(currentGameID)
+		accountIDList, _ := gw.GetAccountIDList(ctx, reg, currentGameID)
+		for _, accountID := range accountIDList {
+			gameIDList, _ := pw.GetGameIDList(ctx, reg, accountID, nil)
+			for _, newGameID := range gameIDList {
+				gameIDQueue = append(gameIDQueue, newGameID)
+				fmt.Print("Here ")
+				fmt.Println(newGameID)
+			}
+		}
+	}
+}
+
+func op() {
+	key := os.Getenv("RIOT_APIKEY")
+	httpClient := http.DefaultClient
+	ctx := context.Background()
+	limiter := ratelimit.NewLimiter()
+	const reg = region.NA1
+	client := apiclient.New(key, httpClient, limiter)
+	//pw := elise.NewPlayerWalker(client)
+	// pw.GetGameIDList(12)
 
 	for _, champion := range champion.All() {
 		champMap[champion] = make(map[lane.Lane]int)
